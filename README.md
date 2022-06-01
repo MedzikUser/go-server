@@ -13,6 +13,6 @@ This is a relatively simple Tcp server but can be extended by writing plugins
 
     make build
 
-### Buing all plugins from `plugin_*` dirs and and save it in the `plugins` directory
+### Build all plugins from `plugin_*` dirs and and save it in the `plugins` directory
 
     make build-plugins
