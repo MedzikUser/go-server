@@ -55,7 +55,7 @@ func main() {
 
 		// handle a client in gorouitine
 		go func() {
-			log.Println("Accepted", conn.RemoteAddr())
+			log.Println("New Client", conn.RemoteAddr())
 
 			client := types.Client{Conn: conn}
 
@@ -88,12 +88,21 @@ func handleConnection(client types.Client, plugins []types.Plugin) {
 			break
 		}
 
+		// run events from plugins (onSend)
+		for _, plugin := range plugins {
+			if plugin.Event == "onSend" {
+				plugin.F("", client)
+			}
+		}
+
 		handleCommand(string(buf[0:reqLen]), client, plugins)
 	}
 }
 
 // handle client command
 func handleCommand(input string, client types.Client, plugins []types.Plugin) {
+	input = strings.ReplaceAll(input, "\n", "")
+	input = strings.ReplaceAll(input, "\r", "")
 	str := strings.Split(input, " ")
 
 	if len(str) <= 0 {
@@ -127,6 +136,10 @@ func handleCommand(input string, client types.Client, plugins []types.Plugin) {
 			str = str + "/disconnect - close connection"
 
 			for _, plugin := range plugins {
+				if len(plugin.Command) <= 0 {
+					continue
+				}
+
 				str = fmt.Sprintf("%s\n%s - %s", str, plugin.Command, plugin.Help)
 			}
 
@@ -141,6 +154,15 @@ func handleCommand(input string, client types.Client, plugins []types.Plugin) {
 
 			client.Send(str)
 
+		case "/clients":
+			var str string
+
+			for i, client := range ClientManager {
+				str = fmt.Sprintf("%sip=%s id=%d\n", str, client.Conn.RemoteAddr(), i+1)
+			}
+
+			client.Send(str)
+
 		case "/broadcast":
 			if len(str) <= 1 {
 				client.Send("Usage: /broadcast <message>")
@@ -150,7 +172,7 @@ func handleCommand(input string, client types.Client, plugins []types.Plugin) {
 				client.Send(strings.Join(str[1:], " "))
 			}
 
-		case "/exit", "/disconnect":
+		case "/disconnect", "/exit", "/close":
 			client.Conn.Close()
 
 		default:
