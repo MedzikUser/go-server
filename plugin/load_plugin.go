@@ -61,7 +61,7 @@ func LoadPlugins(plugins []string) []types.Plugin {
 
 			o = append(o, plugin)
 		} else if *pluginType == "event" {
-			// lookup `Help` in plugin
+			// lookup `Event` in plugin
 			pEvent, err := p.Lookup("Event")
 			if err != nil {
 				panic(err)
