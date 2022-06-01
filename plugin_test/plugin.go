@@ -7,6 +7,9 @@ import (
 // plugin name
 var PluginName string = "test"
 
+// plugin type
+var Type string = "command"
+
 // command after which the `F` function will be executed
 var Command string = "/test"
 

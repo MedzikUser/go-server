@@ -25,37 +25,67 @@ func LoadPlugins(plugins []string) []types.Plugin {
 			panic(err)
 		}
 
-		// lockup `Command` in plugin
-		pCommand, err := p.Lookup("Command")
+		// lookup `Type` in plugin
+		pType, err := p.Lookup("Type")
 		if err != nil {
 			panic(err)
 		}
 
-		// lockup `Help` in plugin
-		pHelp, err := p.Lookup("Help")
-		if err != nil {
-			panic(err)
-		}
+		pluginType := pType.(*string)
 
-		// lockup `F` in plugin (main function)
-		f, err := p.Lookup("F")
-		if err != nil {
-			panic(err)
-		}
+		if *pluginType == "command" {
+			// lookup `Command` in plugin
+			pCommand, err := p.Lookup("Command")
+			if err != nil {
+				panic(err)
+			}
 
-		plugin := types.Plugin{
-			Name:    pName.(*string),
-			Command: pCommand.(*string),
-			Help:    pHelp.(*string),
-			F:       f.(func(string, types.Client)),
-		}
+			// lookup `Help` in plugin
+			pHelp, err := p.Lookup("Help")
+			if err != nil {
+				panic(err)
+			}
 
-		o = append(o, plugin)
+			// lookup `F` in plugin (main function)
+			f, err := p.Lookup("F")
+			if err != nil {
+				panic(err)
+			}
+
+			plugin := types.Plugin{
+				Name:    *pName.(*string),
+				Command: *pCommand.(*string),
+				Help:    *pHelp.(*string),
+				F:       f.(func(string, types.Client)),
+			}
+
+			o = append(o, plugin)
+		} else if *pluginType == "event" {
+			// lookup `Help` in plugin
+			pEvent, err := p.Lookup("Event")
+			if err != nil {
+				panic(err)
+			}
+
+			// lookup `F` in plugin (main function)
+			f, err := p.Lookup("F")
+			if err != nil {
+				panic(err)
+			}
+
+			plugin := types.Plugin{
+				Name:  *pName.(*string),
+				Event: *pEvent.(*string),
+				F:     f.(func(string, types.Client)),
+			}
+
+			o = append(o, plugin)
+		}
 	}
 
 	fmt.Printf("Plugins (%d):\n", len(o))
 	for i, plugin := range o {
-		fmt.Printf("(%d) %s\n", i+1, *plugin.Name)
+		fmt.Printf("(%d) %s\n", i+1, plugin.Name)
 	}
 
 	return o

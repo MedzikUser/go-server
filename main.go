@@ -71,6 +71,13 @@ func handleConnection(client types.Client, plugins []types.Plugin) {
 	// finally terminate the connection
 	defer client.Conn.Close()
 
+	// run events from plugins (onConnect)
+	for _, plugin := range plugins {
+		if plugin.Event == "onConnect" {
+			plugin.F("", client)
+		}
+	}
+
 	// loop to avoid terminating the connection after one command
 	for {
 		buf := make([]byte, 1024)
@@ -100,7 +107,7 @@ func handleCommand(input string, client types.Client, plugins []types.Plugin) {
 
 	// search for the command in plugins
 	for _, plugin := range plugins {
-		if command == *plugin.Command {
+		if command == plugin.Command {
 			plugin.F(input, client)
 
 			executed = true
@@ -113,12 +120,14 @@ func handleCommand(input string, client types.Client, plugins []types.Plugin) {
 	if !executed {
 		switch command {
 		case "/help", "/h":
-			var str string = "/help - show help\n"
+			var str string
+			str = str + "/help - show help\n"
 			str = str + "/plugins - list all plugins\n"
-			str = str + "/broadcast - list all plugins"
+			str = str + "/broadcast <message> - send message to all clients"
+			str = str + "/disconnect - close connection"
 
 			for _, plugin := range plugins {
-				str = fmt.Sprintf("%s\n%s - %s", str, *plugin.Command, *plugin.Help)
+				str = fmt.Sprintf("%s\n%s - %s", str, plugin.Command, plugin.Help)
 			}
 
 			client.Send(str)
@@ -127,15 +136,22 @@ func handleCommand(input string, client types.Client, plugins []types.Plugin) {
 			var str string = "Plugins:"
 
 			for i, plugin := range plugins {
-				str = fmt.Sprintf("%s\n(%d) %s", str, i+1, *plugin.Name)
+				str = fmt.Sprintf("%s\n(%d) %s", str, i+1, plugin.Name)
 			}
 
 			client.Send(str)
 
 		case "/broadcast":
-			for _, client := range ClientManager {
-				client.Send(strings.Join(str[1:], ""))
+			if len(str) <= 1 {
+				client.Send("Usage: /broadcast <message>")
 			}
+
+			for _, client := range ClientManager {
+				client.Send(strings.Join(str[1:], " "))
+			}
+
+		case "/exit", "/disconnect":
+			client.Conn.Close()
 
 		default:
 			client.Send("unknown command")

@@ -1,8 +1,9 @@
 package types
 
 type Plugin struct {
-	Name    *string
-	Command *string
-	Help    *string
+	Name    string
+	Event   string // plugin events (`onConnect`)
+	Command string
+	Help    string
 	F       func(string, Client)
 }

@@ -3,3 +3,7 @@
 *.so
 
 /server
+
+# IDE configs
+.vscode
+.idea

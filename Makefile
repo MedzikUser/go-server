@@ -10,8 +10,10 @@ build:
 
 build-plugins:
 	mkdir -p plugins
-	$(GO) build \
+	for plugin in ./plugin_*; do \
+		$(GO) build \
 		-v \
 		-o plugins/ \
 		-buildmode=plugin \
-		./plugin_*
+		"$${plugin}" ; \
+	done
