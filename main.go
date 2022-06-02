@@ -137,7 +137,7 @@ func handleCommand(input string, client types.Client, plugins []types.Plugin) {
 			var str string
 			str = str + "/help - show help\n"
 			str = str + "/plugins - list all plugins\n"
-			str = str + "/broadcast <message> - send message to all clients"
+			str = str + "/broadcast <message> - send message to all clients\n"
 			str = str + "/disconnect - close connection"
 
 			for _, plugin := range plugins {
