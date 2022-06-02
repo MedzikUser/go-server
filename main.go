@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net"
@@ -14,6 +15,10 @@ import (
 var ClientManager []types.Client
 
 func main() {
+	var port string
+	flag.StringVar(&port, "p", "9999", "TCP server port")
+	flag.Parse()
+
 	// folder where the `.so` plugin files are located
 	pluginDirectory := "plugins"
 
@@ -39,7 +44,7 @@ func main() {
 	plugins := plugin.LoadPlugins(plugins_files)
 
 	// listen TCP server
-	listener, err := net.Listen("tcp", "0.0.0.0:9999")
+	listener, err := net.Listen("tcp", fmt.Sprintf("0.0.0.0:%s", port))
 	if err != nil {
 		panic("unexcepted error when tcp server starting: " + err.Error())
 	}
